@@ -1,0 +1,17 @@
+{
+  "name": "mongo-api-test",
+  "version": "0.1.0",
+  "description": "Giving a try for MongoDB on NodeJS",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\""
+  },
+  "author": "Rafael Camargo <hello@rafaelcamargo.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "express": "^4.15.3",
+    "mongodb": "^3.0.5"
+  }
+}
