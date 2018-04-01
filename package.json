@@ -4,6 +4,7 @@
   "description": "Giving a try for MongoDB on NodeJS",
   "main": "src/app.js",
   "scripts": {
+    "start": "node src/app.js",
     "test": "echo \"Error: no test specified\""
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
