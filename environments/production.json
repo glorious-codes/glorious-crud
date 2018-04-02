@@ -1,6 +1,6 @@
 {
   "APP": {
-    "BASE_URL": "https://e0jvi6y-mongotestapi.wedeploy.io/"
+    "BASE_URL": "https://api-mongotest.wedeploy.io/"
   },
   "DB": {
     "NAME": "mongo-api-test",
