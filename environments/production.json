@@ -1,0 +1,6 @@
+{
+  "DB": {
+    "NAME": "mongo-api-test",
+    "BASE_URL": "mongodb://mongotestapi:m0ngo2018!_L@mongotestapi-shard-00-00-8jykr.mongodb.net:27017,mongotestapi-shard-00-01-8jykr.mongodb.net:27017,mongotestapi-shard-00-02-8jykr.mongodb.net:27017/test?ssl=true&replicaSet=mongotestapi-shard-0&authSource=admin"
+  }
+}

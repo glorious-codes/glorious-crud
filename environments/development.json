@@ -1,0 +1,6 @@
+{
+  "DB": {
+    "NAME": "mongo-api-test",
+    "BASE_URL": "mongodb://localhost:27017"
+  }
+}
