@@ -23,7 +23,7 @@ npm install
 
 6. run:
 ``` bash
-npm run start
+node src/app.js
 ```
 
 The api will be running on `http://localhost:9000`.
@@ -42,8 +42,8 @@ The api will be running on `http://localhost:9000`.
 
 | Method | Url | Body | Response |
 |--------|-----|------|----------|
-| GET | http://localhost:9000/users | - | Array |
-| GET | http://localhost:9000/users/:id | - | Object |
-| POST | http://localhost:9000/users | { "name": "Rafael" } | Object |
-| PUT | http://localhost:9000/users/:id | { "name": "Rafael" } | Object |
-| DELETE | http://localhost:9000/users/:id | - | Object |
+| GET | /users | - | Array |
+| GET | /users/:id | - | Object |
+| POST | /users | { "name": "Rafael" } | Object |
+| PUT | /users/:id | { "name": "Rafael" } | Object |
+| DELETE | /users/:id | - | Object |
