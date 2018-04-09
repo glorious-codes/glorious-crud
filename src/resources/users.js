@@ -1,6 +1,10 @@
 const resourceBuilder = require('./builder');
 const RESOURCE = 'users';
 
-module.exports = function(app){
-  const resource = resourceBuilder(app, RESOURCE);
+const _public = {};
+
+_public.buildEndpoints = app => {
+  const resource = resourceBuilder.build(app, RESOURCE);
 };
+
+module.exports = _public;
