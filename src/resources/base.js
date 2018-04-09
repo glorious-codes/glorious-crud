@@ -1,4 +1,4 @@
-const ENV = require('../environment');
+const ENV = require('../environment')();
 const mongodb = require('mongodb');
 const dateService = require('../services/date-service');
 
