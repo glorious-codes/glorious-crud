@@ -1,5 +1,5 @@
 const express = require('express');
-const resourceBuilder = require('./builder');
+const resourceBuilder = require('../builder/builder');
 const usersResource = require('./users');
 
 describe('Users Resource', () => {

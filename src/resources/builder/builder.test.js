@@ -1,5 +1,5 @@
 const express = require('express');
-const baseResource = require('./base');
+const baseResource = require('../base/base');
 const resourceBuilder = require('./builder');
 const app = express();
 

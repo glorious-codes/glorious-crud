@@ -1,4 +1,4 @@
-const resourceBuilder = require('./builder');
+const resourceBuilder = require('../builder/builder');
 const RESOURCE = 'users';
 
 const _public = {};

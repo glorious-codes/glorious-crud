@@ -1,4 +1,4 @@
-const baseResource = require('./base');
+const baseResource = require('../base/base');
 
 const _public = {};
 
