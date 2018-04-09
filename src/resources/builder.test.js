@@ -49,7 +49,7 @@ describe('Resource Builder', () => {
     const users = [{some: 'user'}, {another: 'users'}];
     mockRequest();
     stubBaseResource('success', users);
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(app.get).toHaveBeenCalledWith('/users/:id?', jasmine.any(Function));
     expect(baseResource.get).toHaveBeenCalledWith('users', undefined, undefined);
     expect(responseMock.send).toHaveBeenCalledWith(users);
@@ -58,7 +58,7 @@ describe('Resource Builder', () => {
   it('should build an endpoint to get one resource of a collection', () => {
     mockRequest({params: {id: 123}});
     stubBaseResource('success');
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(baseResource.get).toHaveBeenCalledWith('users', 123, undefined);
   });
 
@@ -66,7 +66,7 @@ describe('Resource Builder', () => {
     const user = {name: 'Rafael'};
     mockRequest({body: user});
     stubBaseResource('success');
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(app.post).toHaveBeenCalledWith('/users', jasmine.any(Function));
     expect(baseResource.post).toHaveBeenCalledWith('users', user);
   });
@@ -75,7 +75,7 @@ describe('Resource Builder', () => {
     const user = {name: 'Pedro'};
     mockRequest({params: {id: 123}, body: user});
     stubBaseResource('success');
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(app.put).toHaveBeenCalledWith('/users/:id', jasmine.any(Function));
     expect(baseResource.put).toHaveBeenCalledWith('users', 123, user);
   });
@@ -83,7 +83,7 @@ describe('Resource Builder', () => {
   it('should build an endpoint to remove one resource of a collection', () => {
     mockRequest({params: {id: 123}});
     stubBaseResource('success');
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(app.delete).toHaveBeenCalledWith('/users/:id', jasmine.any(Function));
     expect(baseResource.remove).toHaveBeenCalledWith('users', 123);
   });
@@ -92,14 +92,14 @@ describe('Resource Builder', () => {
     const err = {some: 'error'};
     mockRequest();
     stubBaseResource('error', err);
-    resourceBuilder(app, 'users');
+    resourceBuilder.build(app, 'users');
     expect(responseMock.send).toHaveBeenCalledWith(err);
   });
 
   it('should return app instance', () => {
     mockRequest();
     stubBaseResource('success');
-    const appInstance = resourceBuilder(app, 'users');
+    const appInstance = resourceBuilder.build(app, 'users');
     expect(appInstance.get).toBeDefined();
     expect(appInstance.post).toBeDefined();
     expect(appInstance.put).toBeDefined();
