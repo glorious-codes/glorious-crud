@@ -1,30 +1,19 @@
-const
-  ENV = require('./environment'),
-  fs = require('fs'),
-  express = require('express'),
-  bodyParser = require('body-parser'),
-  cors = require('cors'),
-  resources = require('./resources'),
-  port = process.env.NODE_ENV == 'production' ? 80 : 9000;
+const $ = require('./providers/base');
+const resources = require('./resources');
+const _public = {};
 
-const app = express();
-
-app.use(cors());
-app.use(bodyParser.json());
-resources.registerAll(app);
-
-app.get('/', (req, res) => {
-  res.send({
-    users: `${ENV.APP.BASE_URL}/users{/id}`,
-    status: `${ENV.APP.BASE_URL}/status`
+_public.init = () => {
+  const port = getPort();
+  $.app.use($.cors());
+  $.app.use($.bodyParser.json());
+  resources.registerAll($.app);
+  $.app.listen(port, () => {
+    console.log(`Running on port ${port}...`);
   });
-});
+};
 
-app.get('/status', (req, res) => {
-  res.send({status: 'ok'});
-});
+function getPort(){
+  return process.env.NODE_ENV == 'production' ? 80 : 9000;
+}
 
-app.listen(port, () => {
-  console.log(`Running on port ${port}`);
-  console.log('Press Ctrl+C to stop');
-});
+module.exports = _public;

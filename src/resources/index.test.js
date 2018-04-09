@@ -1,5 +1,5 @@
 const express = require('express');
-const usersResource = require('./users');
+const usersResource = require('./users/users');
 const resourceIndex = require('./');
 
 describe('Resource Index', () => {
