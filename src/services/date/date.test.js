@@ -1,4 +1,4 @@
-const dateService = require('./date-service');
+const dateService = require('./date');
 
 describe('Date Service', () => {
   it('should get now date', () => {
