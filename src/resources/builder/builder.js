@@ -1,6 +1,8 @@
-const baseResource = require('./base');
+const baseResource = require('../base/base');
 
-module.exports = function(app, collection){
+const _public = {};
+
+_public.build = (app, collection) => {
 
   app.get(`/${collection}/:id?`, (req, res) => {
     baseResource.get(collection, req.params.id, req.query).then(result => {
@@ -37,3 +39,5 @@ module.exports = function(app, collection){
   return app;
 
 };
+
+module.exports = _public;

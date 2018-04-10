@@ -1,5 +1,6 @@
-const fs = require('fs'),
-  filename = process.env.NODE_ENV || 'development',
-  env = JSON.parse(fs.readFileSync(`${__dirname}/../environments/${filename}.json`), 'UTF-8');
+const prod = require('../environments/production.json');
+const dev = require('../environments/development.json');
 
-module.exports = env;
+module.exports = function(){
+  return process.env.NODE_ENV == 'production' ? prod : dev;
+};

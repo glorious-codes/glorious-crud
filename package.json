@@ -4,8 +4,8 @@
   "description": "Giving a try for MongoDB on NodeJS",
   "main": "src/app.js",
   "scripts": {
-    "start": "NODE_ENV=production node src/app.js",
-    "test": "echo \"Error: no test specified\""
+    "start": "NODE_ENV=production node src/index.js",
+    "test": "./node_modules/jest/bin/jest.js"
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
   "license": "UNLICENSED",
@@ -14,5 +14,8 @@
     "cors": "^2.8.4",
     "express": "^4.15.3",
     "mongodb": "^3.0.5"
+  },
+  "devDependencies": {
+    "jest": "^22.4.3"
   }
 }
