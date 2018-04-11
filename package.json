@@ -1,14 +1,14 @@
 {
-  "name": "mongo-api-test",
+  "name": "nem-api-test",
   "version": "0.1.0",
-  "description": "Giving a try for MongoDB on NodeJS",
+  "description": "Simple API implemented with NodeJS, Express and MongoDB.",
   "main": "src/app.js",
   "scripts": {
-    "start": "NODE_ENV=production node src/index.js",
+    "start": "NODE_ENV=production DB_USER=$DBUSER DB_PASS=$DBPASS node src/index.js",
     "test": "./node_modules/jest/bin/jest.js"
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "dependencies": {
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
