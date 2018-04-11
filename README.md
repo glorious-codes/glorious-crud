@@ -25,7 +25,7 @@ npm install
 
 6. run:
 ``` bash
-node src/app.js
+node src/index.js
 ```
 
 The api will be running on `http://localhost:9000`.
