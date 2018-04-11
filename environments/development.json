@@ -3,7 +3,7 @@
     "BASE_URL": "http://localhost:9000"
   },
   "DB": {
-    "NAME": "mongo-api-test",
+    "NAME": "nem-api-rise",
     "BASE_URL": "mongodb://localhost:27017"
   }
 }
