@@ -4,7 +4,7 @@
   "description": "Simple API implemented with NodeJS, Express and MongoDB.",
   "main": "src/app.js",
   "scripts": {
-    "start": "NODE_ENV=production DB_USER=$DBUSER DB_PASS=$DBPASS node src/index.js",
+    "start": "NODE_ENV=production node src/index.js --dbuser=$DBUSER --dbpass=$DBPASS",
     "test": "./node_modules/jest/bin/jest.js"
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
@@ -13,7 +13,8 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.15.3",
-    "mongodb": "^3.0.5"
+    "mongodb": "^3.0.5",
+    "yargs": "^11.0.0"
   },
   "devDependencies": {
     "jest": "^22.4.3"
