@@ -2,7 +2,7 @@
 
 Simple API implemented with NodeJS, Express and MongoDB.
 
-[![CircleCI](https://circleci.com/gh/rafaelcamargo/nem-api-rise.svg?style=svg)](https://circleci.com/gh/rafaelcamargo/nem-api-rise)
+[![codecov](https://codecov.io/gh/rafaelcamargo/nem-api-rise/branch/master/graph/badge.svg)](https://codecov.io/gh/rafaelcamargo/nem-api-rise) [![CircleCI](https://circleci.com/gh/rafaelcamargo/nem-api-rise.svg?style=svg)](https://circleci.com/gh/rafaelcamargo/nem-api-rise)
 
 ## Contributing
 
