@@ -2,6 +2,8 @@
 
 Simple API implemented with NodeJS, Express and MongoDB.
 
+[![CircleCI](https://circleci.com/gh/rafaelcamargo/nem-api-rise.svg?style=svg)](https://circleci.com/gh/rafaelcamargo/nem-api-rise)
+
 ## Contributing
 
 1. Install [Node](https://nodejs.org/en/). Download the "Recommend for Most Users" version.
