@@ -1,4 +1,3 @@
-const ENV = require('../../environment')();
 const express = require('express');
 const statusResource = require('./status');
 const app = express();
