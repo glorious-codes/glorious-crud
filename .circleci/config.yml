@@ -30,4 +30,4 @@ jobs:
 
       - run:
           name: Coverage
-          command: ./.circleci/deploy.sh
+          command: ./.circleci/coverage.sh
