@@ -5,16 +5,23 @@ const baseResource = require('./base');
 
 describe('Base Resource', () => {
   let mongoDBClientMock,
-    mongoDBClientCollectionMock;
+    mongoDBClientCollectionMock,
+    userMock;
+
+  function mockUser(){
+    userMock = {
+      _id: '5ad25c91d44a096d26a280be',
+      name: 'Rafael',
+      createdAt: '2018-04-07T00:00:00.000Z'
+    };
+  }
 
   function mockMongoDBClientCollection(responseType, response){
     const err = responseType == 'error' ? response : null;
     const result = responseType == 'success' ? response : null;
-    const getError = () => { if(responseType == 'error') return response; };
-    const getResult = () => { if(responseType == 'success') return response;}
     const toArrayStub = jasmine.createSpy();
     const findOneStub = jasmine.createSpy();
-    const insertOneStub = jasmine.createSpy();
+    const saveStub = jasmine.createSpy();
     const updateStub = jasmine.createSpy();
     const deleteOneStub = jasmine.createSpy();
     return {
@@ -28,7 +35,7 @@ describe('Base Resource', () => {
           })
         };
       },
-      insertOne: findOneStub.and.callFake((data, callback) => {
+      save: saveStub.and.callFake((data, callback) => {
         callback(err, result);
       }),
       update: updateStub.and.callFake((query, data, callback) => {
@@ -65,7 +72,8 @@ describe('Base Resource', () => {
   }
 
   beforeEach(() => {
-    spyOn(mongodb, 'ObjectID').and.returnValue(123);
+    mockUser();
+    spyOn(mongodb, 'ObjectID').and.callFake(id => id);
     spyOn(dateService, 'getNow').and.returnValue(new Date('2018-04-07'));
   });
 
@@ -74,13 +82,13 @@ describe('Base Resource', () => {
   });
 
   it('should connect to mongo db client trough the proper database url', () => {
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     baseResource.get('users');
     expect(mongodb.MongoClient.connect).toHaveBeenCalledWith(ENV.DB.BASE_URL, jasmine.any(Function));
   });
 
   it('should return a promise after connecting to mongo db client', () => {
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     const promise = baseResource.get('users');
     expect(promise.then).toBeDefined();
   });
@@ -88,55 +96,135 @@ describe('Base Resource', () => {
   it('should get all resources of a collection', () => {
     const users = [{first: 'user'}, {second: 'user'}];
     mongoDBClientCollectionMock = mockMongoDBClientCollection('success', users);
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     baseResource.get('users').then(response => {
       expect(response).toEqual(users);
     });
   });
 
   it('should get a single resource of a collection', () => {
-    stubMongoClientConnect('success');
-    baseResource.get('users', 123);
-    expect(mongodb.ObjectID).toHaveBeenCalledWith(123);
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    baseResource.get('users', _id);
+    expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
     expect(mongoDBClientCollectionMock.findOne).toHaveBeenCalledWith({
-      _id: 123
+      _id
     }, jasmine.any(Function));
   });
 
+  it('should throw an invalid id error when trying to get a single resource with an invalid id', () => {
+    const _id = 123;
+    stubMongoClientConnect('success', userMock);
+    baseResource.get('users', _id).then(() => {}, err => {
+      expect(err).toEqual({
+        status: 400,
+        body: {
+          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+        }
+      });
+    });
+    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
+  });
+
   it('should save a new resource into a collection', () => {
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     baseResource.post('users', {name: 'Rafael'});
-    expect(mongoDBClientCollectionMock.insertOne).toHaveBeenCalledWith({
+    expect(mongoDBClientCollectionMock.save).toHaveBeenCalledWith({
       name: 'Rafael',
       createdAt: '2018-04-07T00:00:00.000Z'
     }, jasmine.any(Function));
   });
 
+  it('should throw resource not found error when trying to get a non existing resource', () => {
+      const _id = '5ad25c91d44a096d26a280be';
+      stubMongoClientConnect('success', userMock);
+      mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
+        callback(null, null)
+      });
+      baseResource.get('users', _id).then(() => {}, err => {
+        expect(err).toEqual({status: 404});
+      });
+  });
+
   it('should update a resource of a collection', () => {
-    stubMongoClientConnect('success');
-    baseResource.put('users', 123, {name: 'Fernando'});
-    expect(mongodb.ObjectID).toHaveBeenCalledWith(123);
-    expect(mongoDBClientCollectionMock.update).toHaveBeenCalledWith({
-      _id: 123
-    }, {
-      $set: {
-        name: 'Fernando',
-        updatedAt: '2018-04-07T00:00:00.000Z'
-      }
-    }, jasmine.any(Function));
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    baseResource.put('users', _id, {name: 'Fernando'}).then(() => {
+      expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
+      expect(mongoDBClientCollectionMock.update).toHaveBeenCalledWith({
+        _id
+      }, {
+        $set: {
+          name: 'Fernando',
+          updatedAt: '2018-04-07T00:00:00.000Z'
+        }
+      }, jasmine.any(Function));
+    });
+  });
+
+  it('should throw an invalid id error when trying to update a resource with an invalid id', () => {
+    const _id = 123;
+    stubMongoClientConnect('success', userMock);
+    baseResource.put('users', _id, {name: 'Fernando'}).then(() => {}, err => {
+      expect(err).toEqual({
+        status: 400,
+        body: {
+          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+        }
+      });
+    });
+    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
+  });
+
+  it('should throw resource not found error when trying to update a non existing resource', () => {
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
+      callback(null, null)
+    });
+    baseResource.put('users', _id, {name: 'Fernando'}).then(() => {}, err => {
+      expect(err).toEqual({status: 404});
+    });
   });
 
   it('should remove a resource of a collection', () => {
-    stubMongoClientConnect('success');
-    baseResource.remove('users', 123);
-    expect(mongodb.ObjectID).toHaveBeenCalledWith(123);
-    expect(mongoDBClientCollectionMock.deleteOne).toHaveBeenCalledWith({
-      _id: 123
-    }, jasmine.any(Function));
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    baseResource.remove('users', _id).then(() => {
+      expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
+      expect(mongoDBClientCollectionMock.deleteOne).toHaveBeenCalledWith({
+        _id
+      }, jasmine.any(Function));
+    });
+  });
+
+  it('should throw an invalid id error when trying to remove a resource with an invalid id', () => {
+    const _id = 123;
+    stubMongoClientConnect('success', userMock);
+    baseResource.remove('users', _id).then(() => {}, err => {
+      expect(err).toEqual({
+        status: 400,
+        body: {
+          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+        }
+      });
+    });
+    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
+  });
+
+  it('should throw resource not found error when trying to remove a non existing resource', () => {
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
+      callback(null, null)
+    });
+    baseResource.remove('users', _id).then(() => {}, err => {
+      expect(err).toEqual({status: 404});
+    });
   });
 
   it('should disconnect from mongo db client after performing query operation', () => {
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     baseResource.get('users').then(() => {
       expect(mongoDBClientMock.close).toHaveBeenCalled();
     });
@@ -151,9 +239,16 @@ describe('Base Resource', () => {
 
   it('should reject promise when database operation fails', () => {
     mongoDBClientCollectionMock = mockMongoDBClientCollection('error', {another: 'error'});
-    stubMongoClientConnect('success');
+    stubMongoClientConnect('success', userMock);
     baseResource.get('users').then(() => {}, err => {
-      expect(err).toEqual({another: 'error'});
+      expect(err).toEqual({
+        status: 500,
+        body: {
+          message: {
+            another: 'error'
+          }
+        }
+      });
     });
   });
 });
