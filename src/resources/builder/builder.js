@@ -1,3 +1,4 @@
+const idService = require('../../services/id/id');
 const baseResource = require('../base/base');
 
 const _public = {};
@@ -8,31 +9,33 @@ _public.build = (app, collection) => {
     baseResource.get(collection, req.params.id, req.query).then(result => {
       res.send(result);
     }, err => {
-      res.send(err);
+      res.status(err.status).send(err.body);
     });
   });
 
   app.post(`/${collection}`, (req, res) => {
-    baseResource.post(collection, req.body).then(result => {
-      res.send(result);
+    const item = req.body;
+    item._id = idService.generate();
+    baseResource.post(collection, item).then(() => {
+      res.status(201).send({_id: item._id});
     }, err => {
-      res.send(err);
+      res.status(err.status).send(err.body);
     });
   });
 
   app.put(`/${collection}/:id`, (req, res) => {
-    baseResource.put(collection, req.params.id, req.body).then(result => {
-      res.send(result);
+    baseResource.put(collection, req.params.id, req.body).then(() => {
+      res.status(204).send();
     }, err => {
-      res.send(err);
+      res.status(err.status).send(err.body);
     });
   });
 
   app.delete(`/${collection}/:id`, (req, res) => {
-    baseResource.remove(collection, req.params.id).then(result => {
-      res.send(result);
+    baseResource.remove(collection, req.params.id).then(() => {
+      res.status(204).send();
     }, err => {
-      res.send(err);
+      res.status(err.status).send(err.body);
     });
   });
 
