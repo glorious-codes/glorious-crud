@@ -119,7 +119,7 @@ describe('Base Resource', () => {
       expect(err).toEqual({
         status: 400,
         body: {
-          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+          message: 'Id should be a string of 24 hex characters.'
         }
       });
     });
@@ -133,6 +133,14 @@ describe('Base Resource', () => {
       name: 'Rafael',
       createdAt: '2018-04-07T00:00:00.000Z'
     }, jasmine.any(Function));
+  });
+
+  it('should throw empty payload error when trying to save a resource wit no data', () => {
+    stubMongoClientConnect('success', userMock);
+    baseResource.post('users').then(() => {}, err => {
+      expect(err).toEqual({status: 400, body: {message: 'Request payload cannot be empty.'}});
+    });
+    expect(mongoDBClientCollectionMock.save).not.toHaveBeenCalled();
   });
 
   it('should throw resource not found error when trying to get a non existing resource', () => {
@@ -169,7 +177,7 @@ describe('Base Resource', () => {
       expect(err).toEqual({
         status: 400,
         body: {
-          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+          message: 'Id should be a string of 24 hex characters.'
         }
       });
     });
@@ -185,6 +193,15 @@ describe('Base Resource', () => {
     baseResource.put('users', _id, {name: 'Fernando'}).then(() => {}, err => {
       expect(err).toEqual({status: 404});
     });
+  });
+
+  it('should throw empty payload error when trying to update a resource wit no data', () => {
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect('success', userMock);
+    baseResource.put('users', _id).then(() => {}, err => {
+      expect(err).toEqual({status: 400, body: {message: 'Request payload cannot be empty.'}});
+    });
+    expect(mongoDBClientCollectionMock.update).not.toHaveBeenCalled();
   });
 
   it('should remove a resource of a collection', () => {
@@ -205,7 +222,7 @@ describe('Base Resource', () => {
       expect(err).toEqual({
         status: 400,
         body: {
-          message: 'Id is not valid. Id should be a string of 24 hex characters.'
+          message: 'Id should be a string of 24 hex characters.'
         }
       });
     });
@@ -233,20 +250,24 @@ describe('Base Resource', () => {
   it('should reject promise when connection to mongo db fails', () => {
     stubMongoClientConnect('error', {some: 'error'});
     baseResource.get('users').then(() => {}, err => {
-      expect(err).toEqual({some: 'error'});
+      expect(err).toEqual({
+        status: 500,
+        body: {
+          message: 'Failed on connect to the database.'
+        }
+      });
     });
   });
 
   it('should reject promise when database operation fails', () => {
-    mongoDBClientCollectionMock = mockMongoDBClientCollection('error', {another: 'error'});
+    const message = 'Some error message';
+    mongoDBClientCollectionMock = mockMongoDBClientCollection('error', message);
     stubMongoClientConnect('success', userMock);
     baseResource.get('users').then(() => {}, err => {
       expect(err).toEqual({
         status: 500,
         body: {
-          message: {
-            another: 'error'
-          }
+          message
         }
       });
     });
