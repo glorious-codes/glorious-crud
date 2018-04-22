@@ -45,6 +45,10 @@ describe('Resource Builder', () => {
     });
   }
 
+  function stubIdValidation(isValid){
+    spyOn(idService, 'isValid').and.returnValue(isValid);
+  }
+
   function stubIdService(id){
     spyOn(idService, 'generate').and.returnValue(id);
   }
@@ -78,16 +82,32 @@ describe('Resource Builder', () => {
   it('should get all resources of a collection', () => {
     stubBaseResource('get', 'success');
     stubAppMethod('get', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
     expect(baseResource.get).toHaveBeenCalledWith('users', undefined, undefined);
   });
 
   it('should get a single resources of a collection', () => {
-    mockRequest({params: {id: 123}});
+    const id = 123;
+    mockRequest({params: {id}});
     stubBaseResource('get', 'success');
     stubAppMethod('get', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
-    expect(baseResource.get).toHaveBeenCalledWith('users', 123, undefined);
+    expect(baseResource.get).toHaveBeenCalledWith('users', id, undefined);
+  });
+
+  it('should throw an invalid id error when trying to get a single resource with an invalid id', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Id should be a string of 24 hex characters.'}};
+    mockRequest({params: {id}});
+    stubBaseResource('get');
+    stubAppMethod('get', true);
+    stubIdValidation(false);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.get).not.toHaveBeenCalled();
   });
 
   it('should be able to filter resources of a collection', () => {
@@ -116,37 +136,40 @@ describe('Resource Builder', () => {
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
 
-  it('should save a new resources in a collection', () => {
+  it('should save a new resource in a collection', () => {
+    const id = 123;
     const user = {name: 'Rafael'};
     mockRequest({body: user});
-    stubIdService(123);
+    stubIdService(id);
     stubBaseResource('post', 'success');
     stubAppMethod('post', true);
     resourceBuilder.build(app, 'users');
     expect(baseResource.post).toHaveBeenCalledWith('users', {
-      _id: 123,
+      _id: id,
       name: 'Rafael'
     });
   });
 
   it('should handle success when saving a new resource in a collection', () => {
+    const id = 123;
     const user = {name: 'Rafael'};
     mockRequest({body: user});
-    stubIdService(123);
+    stubIdService(id);
     stubBaseResource('post', 'success');
     stubAppMethod('post', true);
     resourceBuilder.build(app, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(201);
     expect(responseMock.send).toHaveBeenCalledWith({
-      _id: 123
+      _id: id
     });
   });
 
   it('should handle error when trying to save a new resource in a collection', () => {
-    const err = {status: 400, body: {message: 'some kind of bad request'}};
+    const id = 123;
+    const err = {status: 400, body: {message: 'some kind of bad request.'}};
     const user = {name: 'Rafael'};
     mockRequest({body: user});
-    stubIdService(123);
+    stubIdService(id);
     stubBaseResource('post', 'error', err);
     stubAppMethod('post', true);
     resourceBuilder.build(app, 'users');
@@ -154,60 +177,156 @@ describe('Resource Builder', () => {
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
 
+  it('should throw empty request body error when trying to save a new resource with no data', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Request body cannot be empty.'}};
+    const user = {};
+    mockRequest({body: user});
+    stubBaseResource('post');
+    stubAppMethod('post', true);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.post).not.toHaveBeenCalled();
+  });
+
+  it('should throw empty request body error when trying to save a new resource with no attributes other than prototype attributes', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Request body cannot be empty.'}};
+    const protoObj = {someProto: 'attribute'};
+    const user = Object.create(protoObj);
+    mockRequest({body: user});
+    stubBaseResource('post');
+    stubAppMethod('post', true);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.post).not.toHaveBeenCalled();
+  });
+
   it('should update resource in a collection', () => {
+    const id = 123;
     const user = {name: 'Rafael'};
-    mockRequest({params: {id: 123}, body: user});
+    mockRequest({params: {id}, body: user});
     stubBaseResource('put', 'success');
     stubAppMethod('put', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
-    expect(baseResource.put).toHaveBeenCalledWith('users', 123, user);
+    expect(baseResource.put).toHaveBeenCalledWith('users', id, user);
   });
 
   it('should handle success when updating resource in a collection', () => {
+    const id = 123;
     const user = {name: 'Rafael'};
-    mockRequest({params: {id: 123}, body: user});
+    mockRequest({params: {id}, body: user});
     stubBaseResource('put', 'success');
     stubAppMethod('put', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(204);
     expect(responseMock.send).toHaveBeenCalledWith();
   });
 
   it('should handle error when trying to update a resource in a collection', () => {
-    const err = {status: 400, body: {message: 'some kind of bad request'}};
+    const id = 123;
+    const err = {status: 400, body: {message: 'some kind of bad request.'}};
     const user = {name: 'Rafael'};
-    mockRequest({params: {id: 123}, body: user});
+    mockRequest({params: {id}, body: user});
     stubBaseResource('put', 'error', err);
     stubAppMethod('put', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
+  });
+
+  it('should throw invalid id error when trying to update a resource with an invalid id', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Id should be a string of 24 hex characters.'}};
+    const user = {name: 'Rafael'};
+    mockRequest({params: {id}, body: user});
+    stubBaseResource('put');
+    stubAppMethod('put', true);
+    stubIdValidation(false);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.put).not.toHaveBeenCalled();
+  });
+
+  it('should throw empty request body error when trying to update a resource with no data', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Request body cannot be empty.'}};
+    const user = {};
+    mockRequest({body: user});
+    stubBaseResource('put');
+    stubAppMethod('put', true);
+    stubIdValidation(true);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.put).not.toHaveBeenCalled();
+  });
+
+  it('should throw empty request body error when trying to update a resource with no attributes other than prototype attributes', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Request body cannot be empty.'}};
+    const protoObj = {someProto: 'attribute'};
+    const user = Object.create(protoObj);
+    mockRequest({body: user});
+    stubBaseResource('put');
+    stubAppMethod('put', true);
+    stubIdValidation(true);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.put).not.toHaveBeenCalled();
   });
 
   it('should remove resource in a collection', () => {
-    mockRequest({params: {id: 123}});
+    const id = 123;
+    mockRequest({params: {id}});
     stubBaseResource('remove', 'success');
     stubAppMethod('delete', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
-    expect(baseResource.remove).toHaveBeenCalledWith('users', 123);
+    expect(baseResource.remove).toHaveBeenCalledWith('users', id);
   });
 
-  it('should handle success when updating resource in a collection', () => {
-    mockRequest({params: {id: 123}});
+  it('should handle success when removing resource in a collection', () => {
+    const id = 123;
+    mockRequest({params: {id}});
     stubBaseResource('remove', 'success');
     stubAppMethod('delete', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(204);
     expect(responseMock.send).toHaveBeenCalledWith();
   });
 
-  it('should handle error when trying to update a resource in a collection', () => {
+  it('should handle error when trying to remove a resource in a collection', () => {
+    const id = 123;
     const err = {status: 400, body: {message: 'some kind of bad request'}};
-    mockRequest({params: {id: 123}});
+    mockRequest({params: {id}});
     stubBaseResource('remove', 'error', err);
     stubAppMethod('delete', true);
+    stubIdValidation(true);
     resourceBuilder.build(app, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
+  });
+
+  it('should throw invalid id error when trying to remove a resource with an invalid id', () => {
+    const id = 123;
+    const err = {status: 400, body: {message: 'Id should be a string of 24 hex characters.'}};
+    const user = {name: 'Rafael'};
+    mockRequest({params: {id}, body: user});
+    stubBaseResource('remove');
+    stubAppMethod('delete', true);
+    stubIdValidation(false);
+    resourceBuilder.build(app, 'users');
+    expect(responseMock.status).toHaveBeenCalledWith(err.status);
+    expect(responseMock.send).toHaveBeenCalledWith(err.body);
+    expect(baseResource.remove).not.toHaveBeenCalled();
   });
 });

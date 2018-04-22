@@ -87,7 +87,7 @@ describe('Base Resource', () => {
     expect(mongodb.MongoClient.connect).toHaveBeenCalledWith(ENV.DB.BASE_URL, jasmine.any(Function));
   });
 
-  it('should return a promise after connecting to mongo db client', () => {
+  it('should return a promise after connecting to the mongo db client', () => {
     stubMongoClientConnect('success', userMock);
     const promise = baseResource.get('users');
     expect(promise.then).toBeDefined();
@@ -112,18 +112,15 @@ describe('Base Resource', () => {
     }, jasmine.any(Function));
   });
 
-  it('should throw an invalid id error when trying to get a single resource with an invalid id', () => {
-    const _id = 123;
+  it('should throw resource not found error when trying to get a non existing resource', () => {
+    const _id = '5ad25c91d44a096d26a280be';
     stubMongoClientConnect('success', userMock);
-    baseResource.get('users', _id).then(() => {}, err => {
-      expect(err).toEqual({
-        status: 400,
-        body: {
-          message: 'Id should be a string of 24 hex characters.'
-        }
-      });
+    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
+      callback(null, null)
     });
-    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
+    baseResource.get('users', _id).then(() => {}, err => {
+      expect(err).toEqual({status: 404});
+    });
   });
 
   it('should save a new resource into a collection', () => {
@@ -133,25 +130,6 @@ describe('Base Resource', () => {
       name: 'Rafael',
       createdAt: '2018-04-07T00:00:00.000Z'
     }, jasmine.any(Function));
-  });
-
-  it('should throw empty payload error when trying to save a resource wit no data', () => {
-    stubMongoClientConnect('success', userMock);
-    baseResource.post('users').then(() => {}, err => {
-      expect(err).toEqual({status: 400, body: {message: 'Request payload cannot be empty.'}});
-    });
-    expect(mongoDBClientCollectionMock.save).not.toHaveBeenCalled();
-  });
-
-  it('should throw resource not found error when trying to get a non existing resource', () => {
-      const _id = '5ad25c91d44a096d26a280be';
-      stubMongoClientConnect('success', userMock);
-      mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
-        callback(null, null)
-      });
-      baseResource.get('users', _id).then(() => {}, err => {
-        expect(err).toEqual({status: 404});
-      });
   });
 
   it('should update a resource of a collection', () => {
@@ -170,20 +148,6 @@ describe('Base Resource', () => {
     });
   });
 
-  it('should throw an invalid id error when trying to update a resource with an invalid id', () => {
-    const _id = 123;
-    stubMongoClientConnect('success', userMock);
-    baseResource.put('users', _id, {name: 'Fernando'}).then(() => {}, err => {
-      expect(err).toEqual({
-        status: 400,
-        body: {
-          message: 'Id should be a string of 24 hex characters.'
-        }
-      });
-    });
-    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
-  });
-
   it('should throw resource not found error when trying to update a non existing resource', () => {
     const _id = '5ad25c91d44a096d26a280be';
     stubMongoClientConnect('success', userMock);
@@ -195,15 +159,6 @@ describe('Base Resource', () => {
     });
   });
 
-  it('should throw empty payload error when trying to update a resource wit no data', () => {
-    const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
-    baseResource.put('users', _id).then(() => {}, err => {
-      expect(err).toEqual({status: 400, body: {message: 'Request payload cannot be empty.'}});
-    });
-    expect(mongoDBClientCollectionMock.update).not.toHaveBeenCalled();
-  });
-
   it('should remove a resource of a collection', () => {
     const _id = '5ad25c91d44a096d26a280be';
     stubMongoClientConnect('success', userMock);
@@ -213,20 +168,6 @@ describe('Base Resource', () => {
         _id
       }, jasmine.any(Function));
     });
-  });
-
-  it('should throw an invalid id error when trying to remove a resource with an invalid id', () => {
-    const _id = 123;
-    stubMongoClientConnect('success', userMock);
-    baseResource.remove('users', _id).then(() => {}, err => {
-      expect(err).toEqual({
-        status: 400,
-        body: {
-          message: 'Id should be a string of 24 hex characters.'
-        }
-      });
-    });
-    expect(mongoDBClientCollectionMock.findOne).not.toHaveBeenCalled();
   });
 
   it('should throw resource not found error when trying to remove a non existing resource', () => {
@@ -251,7 +192,7 @@ describe('Base Resource', () => {
     stubMongoClientConnect('error', {some: 'error'});
     baseResource.get('users').then(() => {}, err => {
       expect(err).toEqual({
-        status: 500,
+        status: 503,
         body: {
           message: 'Failed on connect to the database.'
         }
@@ -259,15 +200,14 @@ describe('Base Resource', () => {
     });
   });
 
-  it('should reject promise when database operation fails', () => {
-    const message = 'Some error message';
-    mongoDBClientCollectionMock = mockMongoDBClientCollection('error', message);
+  it('should reject promise when server throw some unexpected error', () => {
+    mongoDBClientCollectionMock = mockMongoDBClientCollection('error', {some: 'error'});
     stubMongoClientConnect('success', userMock);
     baseResource.get('users').then(() => {}, err => {
       expect(err).toEqual({
         status: 500,
         body: {
-          message
+          message: 'Unexpected server error.'
         }
       });
     });
