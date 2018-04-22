@@ -1,12 +1,11 @@
 const ENV = require('../../environment')();
+const ERRORS = require('../../constants/errors');
 const mongodb = require('mongodb');
 const dateService = require('../../services/date/date');
 
 const _public = {};
 
 _public.get = (collection, id, query = {}) => {
-  if(id && !isValidId(id))
-    return throwInvalidIdError();
   return connect((db, onComplete) => {
     collection = db.collection(collection);
     if (id)
@@ -17,8 +16,6 @@ _public.get = (collection, id, query = {}) => {
 };
 
 _public.post = (collection, data) => {
-  if(!data)
-    return throwEmptyPayloadError();
   return connect((db, onComplete) => {
     data.createdAt = dateService.getNow().toJSON();
     db.collection(collection).save(data, onComplete);
@@ -26,10 +23,6 @@ _public.post = (collection, data) => {
 };
 
 _public.put = (collection, id, data) => {
-  if (!isValidId(id))
-    return throwInvalidIdError();
-  if (!data)
-    return throwEmptyPayloadError();
   return connect((db, onComplete) => {
     data.updatedAt = dateService.getNow().toJSON();
     _public.get(collection, id).then(() => {
@@ -41,8 +34,6 @@ _public.put = (collection, id, data) => {
 };
 
 _public.remove = (collection, id) => {
-  if (!isValidId(id))
-    return throwInvalidIdError();
   return connect((db, onComplete) => {
     _public.get(collection, id).then(() => {
       db.collection(collection).deleteOne({'_id': mongodb.ObjectID(id)}, onComplete);
@@ -56,7 +47,7 @@ function connect(query){
   return new Promise(function(resolve, reject) {
     mongodb.MongoClient.connect(ENV.DB.BASE_URL, (err, client) => {
       if (err)
-        reject(buildDatabaseConnectionError());
+        reject(ERRORS.DB_UNAVAILABLE);
       else
         query(client.db(ENV.DB.NAME), (err, result) => {
           if (err)
@@ -67,11 +58,6 @@ function connect(query){
         });
     });
   });
-}
-
-function isValidId(id){
-  const regex = new RegExp(/^[a-f|0-9]+$/);
-  return id.length === 24 && regex.test(id);
 }
 
 function getSingleResource(collection, id, query, onComplete){
@@ -89,45 +75,12 @@ function getAllResources(collection, query, onComplete){
 
 function onGetComplete(err, result, onComplete){
   if(err) {
-    onComplete({status: 500, body: { message: err }});
+    onComplete(ERRORS.UNEXPECTED_ERROR);
   } else if (!Array.isArray(result) && !result){
-    onComplete({status: 404});
+    onComplete(ERRORS.RESOURCE_NOT_FOUND);
   } else {
     onComplete(null, result);
   }
-}
-
-function throwInvalidIdError(){
-  return throwError(buildInvalidIdError());
-}
-
-function throwEmptyPayloadError(){
-  return throwError(buildEmptyPayloadError());
-}
-
-function buildDatabaseConnectionError(){
-  return buildError(500, 'Failed on connect to the database.');
-}
-
-function buildInvalidIdError(){
-  return buildError(400, 'Id should be a string of 24 hex characters.');
-}
-
-function buildEmptyPayloadError(){
-  return buildError(400, 'Request payload cannot be empty.');
-}
-
-function buildError(status, message){
-  return {
-    status,
-    body: { message }
-  };
-}
-
-function throwError(err){
-  return new Promise(function(resolve, reject) {
-    reject(err);
-  });
 }
 
 module.exports = _public;
