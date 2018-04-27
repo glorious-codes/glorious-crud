@@ -1,10 +1,10 @@
 const express = require('express');
-const baseResource = require('../base/base');
+const BaseResource = require('../base/base');
 const idService = require('../../services/id/id');
 const resourceBuilder = require('./builder');
 
 describe('Resource Builder', () => {
-  let app, requestMock, responseMock;
+  let app, baseResource, requestMock, responseMock;
 
   function mockApp(){
     app = {
@@ -54,28 +54,29 @@ describe('Resource Builder', () => {
   }
 
   beforeEach(() => {
+    baseResource = new BaseResource('mongodb://test:27017', 'testdb');
     mockApp();
     mockRequest();
     mockResponse();
   });
 
   it('should build an endpoint to get some resource', () => {
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(app.get).toHaveBeenCalledWith('/users/:id?', jasmine.any(Function));
   });
 
   it('should build an endpoint to save some resource', () => {
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(app.post).toHaveBeenCalledWith('/users', jasmine.any(Function));
   });
 
   it('should build an endpoint to update some resource', () => {
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(app.put).toHaveBeenCalledWith('/users/:id', jasmine.any(Function));
   });
 
   it('should build an endpoint to delete some resource', () => {
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(app.delete).toHaveBeenCalledWith('/users/:id', jasmine.any(Function));
   });
 
@@ -83,7 +84,7 @@ describe('Resource Builder', () => {
     stubBaseResource('get', 'success');
     stubAppMethod('get', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.get).toHaveBeenCalledWith('users', undefined, undefined);
   });
 
@@ -93,7 +94,7 @@ describe('Resource Builder', () => {
     stubBaseResource('get', 'success');
     stubAppMethod('get', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.get).toHaveBeenCalledWith('users', id, undefined);
   });
 
@@ -104,7 +105,7 @@ describe('Resource Builder', () => {
     stubBaseResource('get');
     stubAppMethod('get', true);
     stubIdValidation(false);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.get).not.toHaveBeenCalled();
@@ -115,7 +116,7 @@ describe('Resource Builder', () => {
     mockRequest({query});
     stubBaseResource('get', 'success');
     stubAppMethod('get', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.get).toHaveBeenCalledWith('users', undefined, query);
   });
 
@@ -123,7 +124,7 @@ describe('Resource Builder', () => {
     const users = [{some: 'user'}, {another: 'users'}];
     stubBaseResource('get', 'success', users);
     stubAppMethod('get', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.send).toHaveBeenCalledWith(users);
   });
 
@@ -131,7 +132,7 @@ describe('Resource Builder', () => {
     const err = {status: 400, body: {message: 'some kind of bad request'}};
     stubBaseResource('get', 'error', err);
     stubAppMethod('get', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
@@ -143,7 +144,7 @@ describe('Resource Builder', () => {
     stubIdService(id);
     stubBaseResource('post', 'success');
     stubAppMethod('post', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.post).toHaveBeenCalledWith('users', {
       _id: id,
       name: 'Rafael'
@@ -157,7 +158,7 @@ describe('Resource Builder', () => {
     stubIdService(id);
     stubBaseResource('post', 'success');
     stubAppMethod('post', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(201);
     expect(responseMock.send).toHaveBeenCalledWith({
       _id: id
@@ -172,7 +173,7 @@ describe('Resource Builder', () => {
     stubIdService(id);
     stubBaseResource('post', 'error', err);
     stubAppMethod('post', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
@@ -184,7 +185,7 @@ describe('Resource Builder', () => {
     mockRequest({body: user});
     stubBaseResource('post');
     stubAppMethod('post', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.post).not.toHaveBeenCalled();
@@ -198,7 +199,7 @@ describe('Resource Builder', () => {
     mockRequest({body: user});
     stubBaseResource('post');
     stubAppMethod('post', true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.post).not.toHaveBeenCalled();
@@ -211,7 +212,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put', 'success');
     stubAppMethod('put', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.put).toHaveBeenCalledWith('users', id, user);
   });
 
@@ -222,7 +223,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put', 'success');
     stubAppMethod('put', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(204);
     expect(responseMock.send).toHaveBeenCalledWith();
   });
@@ -235,7 +236,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put', 'error', err);
     stubAppMethod('put', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
@@ -248,7 +249,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put');
     stubAppMethod('put', true);
     stubIdValidation(false);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.put).not.toHaveBeenCalled();
@@ -262,7 +263,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put');
     stubAppMethod('put', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.put).not.toHaveBeenCalled();
@@ -277,7 +278,7 @@ describe('Resource Builder', () => {
     stubBaseResource('put');
     stubAppMethod('put', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.put).not.toHaveBeenCalled();
@@ -289,7 +290,7 @@ describe('Resource Builder', () => {
     stubBaseResource('remove', 'success');
     stubAppMethod('delete', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(baseResource.remove).toHaveBeenCalledWith('users', id);
   });
 
@@ -299,7 +300,7 @@ describe('Resource Builder', () => {
     stubBaseResource('remove', 'success');
     stubAppMethod('delete', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(204);
     expect(responseMock.send).toHaveBeenCalledWith();
   });
@@ -311,7 +312,7 @@ describe('Resource Builder', () => {
     stubBaseResource('remove', 'error', err);
     stubAppMethod('delete', true);
     stubIdValidation(true);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
   });
@@ -324,7 +325,7 @@ describe('Resource Builder', () => {
     stubBaseResource('remove');
     stubAppMethod('delete', true);
     stubIdValidation(false);
-    resourceBuilder.build(app, 'users');
+    resourceBuilder.build(app, baseResource, 'users');
     expect(responseMock.status).toHaveBeenCalledWith(err.status);
     expect(responseMock.send).toHaveBeenCalledWith(err.body);
     expect(baseResource.remove).not.toHaveBeenCalled();

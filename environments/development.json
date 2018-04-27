@@ -1,9 +1,0 @@
-{
-  "APP": {
-    "BASE_URL": "http://localhost:9000"
-  },
-  "DB": {
-    "NAME": "nem-api-rise",
-    "BASE_URL": "mongodb://localhost:27017"
-  }
-}

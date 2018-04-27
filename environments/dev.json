@@ -1,0 +1,9 @@
+{
+  "db": {
+    "url": "mongodb://localhost:27017",
+    "name": "gcrud"
+  },
+  "app": {
+    "port": 9000
+  }
+}

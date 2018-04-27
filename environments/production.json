@@ -1,9 +1,0 @@
-{
-  "APP": {
-    "BASE_URL": "https://api-nemrise.wedeploy.io"
-  },
-  "DB": {
-    "NAME": "nem-api-rise",
-    "BASE_URL": "mongodb://<USER>:<PASS>@nem-api-rise-shard-00-00-wnijj.mongodb.net:27017,nem-api-rise-shard-00-01-wnijj.mongodb.net:27017,nem-api-rise-shard-00-02-wnijj.mongodb.net:27017/test?ssl=true&replicaSet=nem-api-rise-shard-0&authSource=admin"
-  }
-}

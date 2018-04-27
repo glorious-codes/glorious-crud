@@ -1,10 +1,9 @@
 const ERRORS = require('../../constants/errors');
 const idService = require('../../services/id/id');
-const baseResource = require('../base/base');
 
 const _public = {};
 
-_public.build = (app, collection) => {
+_public.build = (app, baseResource, collection) => {
 
   app.get(`/${collection}/:id?`, (req, res) => {
     const id = req.params.id;

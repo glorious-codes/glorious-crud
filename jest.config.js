@@ -1,5 +1,5 @@
 module.exports = {
-  "collectCoverageFrom": ['<rootDir>/src/**/*.js'],
+  "collectCoverageFrom": ['<rootDir>/src/**/!(app).js'],
   "coverageDirectory": "./coverage/",
   "coverageReporters": ["html"],
   "coverageThreshold": {

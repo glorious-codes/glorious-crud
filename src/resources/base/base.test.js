@@ -1,12 +1,12 @@
-const ENV = require('../../environment')();
 const mongodb = require('mongodb');
 const dateService = require('../../services/date/date');
-const baseResource = require('./base');
+const BaseResource = require('./base');
 
 describe('Base Resource', () => {
   let mongoDBClientMock,
     mongoDBClientCollectionMock,
-    userMock;
+    userMock,
+    baseResource;
 
   function mockUser(){
     userMock = {
@@ -72,6 +72,7 @@ describe('Base Resource', () => {
   }
 
   beforeEach(() => {
+    baseResource = new BaseResource('mongodb://test:27017', 'testdb');
     mockUser();
     spyOn(mongodb, 'ObjectID').and.callFake(id => id);
     spyOn(dateService, 'getNow').and.returnValue(new Date('2018-04-07'));
@@ -84,7 +85,7 @@ describe('Base Resource', () => {
   it('should connect to mongo db client trough the proper database url', () => {
     stubMongoClientConnect('success', userMock);
     baseResource.get('users');
-    expect(mongodb.MongoClient.connect).toHaveBeenCalledWith(ENV.DB.BASE_URL, jasmine.any(Function));
+    expect(mongodb.MongoClient.connect).toHaveBeenCalledWith('mongodb://test:27017', jasmine.any(Function));
   });
 
   it('should return a promise after connecting to the mongo db client', () => {

@@ -1,55 +1,59 @@
-const ENV = require('../../environment')();
-const ERRORS = require('../../constants/errors');
 const mongodb = require('mongodb');
+const ERRORS = require('../../constants/errors');
 const dateService = require('../../services/date/date');
 
-const _public = {};
+module.exports = class BaseResource {
+  constructor(dbUrl, dbName){
+    this.dbUrl = dbUrl;
+    this.dbName = dbName;
+  }
 
-_public.get = (collection, id, query = {}) => {
-  return connect((db, onComplete) => {
-    collection = db.collection(collection);
-    if (id)
-      getSingleResource(collection, id, query, onComplete);
-    else
-      getAllResources(collection, query, onComplete)
-  });
-};
+  get(collection, id, query = {}){
+    return connect((db, onComplete) => {
+      collection = db.collection(collection);
+      if (id)
+        getSingleResource(collection, id, query, onComplete);
+      else
+        getAllResources(collection, query, onComplete)
+    }, this.dbUrl, this.dbName);
+  }
 
-_public.post = (collection, data) => {
-  return connect((db, onComplete) => {
-    data.createdAt = dateService.getNow().toJSON();
-    db.collection(collection).save(data, onComplete);
-  });
-};
+  post(collection, data){
+    return connect((db, onComplete) => {
+      data.createdAt = dateService.getNow().toJSON();
+      db.collection(collection).save(data, onComplete);
+    }, this.dbUrl, this.dbName);
+  }
 
-_public.put = (collection, id, data) => {
-  return connect((db, onComplete) => {
-    data.updatedAt = dateService.getNow().toJSON();
-    _public.get(collection, id).then(() => {
-      db.collection(collection).update({'_id': mongodb.ObjectID(id)}, {$set: data}, onComplete);
-    }, err => {
-      onComplete(err);
-    });
-  });
-};
+  put(collection, id, data){
+    return connect((db, onComplete) => {
+      data.updatedAt = dateService.getNow().toJSON();
+      this.get(collection, id).then(() => {
+        db.collection(collection).update({'_id': mongodb.ObjectID(id)}, {$set: data}, onComplete);
+      }, err => {
+        onComplete(err);
+      });
+    }, this.dbUrl, this.dbName);
+  }
 
-_public.remove = (collection, id) => {
-  return connect((db, onComplete) => {
-    _public.get(collection, id).then(() => {
-      db.collection(collection).deleteOne({'_id': mongodb.ObjectID(id)}, onComplete);
-    }, err => {
-      onComplete(err);
-    });
-  });
-};
+  remove(collection, id){
+    return connect((db, onComplete) => {
+      this.get(collection, id).then(() => {
+        db.collection(collection).deleteOne({'_id': mongodb.ObjectID(id)}, onComplete);
+      }, err => {
+        onComplete(err);
+      });
+    }, this.dbUrl, this.dbName);
+  }
+}
 
-function connect(query){
+function connect(query, dbUrl, dbName){
   return new Promise(function(resolve, reject) {
-    mongodb.MongoClient.connect(ENV.DB.BASE_URL, (err, client) => {
+    mongodb.MongoClient.connect(dbUrl, (err, client) => {
       if (err)
         reject(ERRORS.DB_UNAVAILABLE);
       else
-        query(client.db(ENV.DB.NAME), (err, result) => {
+        query(client.db(dbName), (err, result) => {
           if (err)
             reject(err);
           else
@@ -82,5 +86,3 @@ function onGetComplete(err, result, onComplete){
     onComplete(null, result);
   }
 }
-
-module.exports = _public;

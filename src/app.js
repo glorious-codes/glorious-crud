@@ -1,19 +1,21 @@
-const $ = require('./providers/base');
-const resources = require('./resources');
-const _public = {};
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const express = require('express');
+const GCrud = require('./');
+const envProd = require('../environments/prod.json');
+const envDev = require('../environments/dev.json');
+const env = process.env.NODE_ENV == 'production' ? envProd : envDev;
 
-_public.init = () => {
-  const port = getPort();
-  $.app.use($.cors());
-  $.app.use($.bodyParser.json());
-  resources.registerAll($.app);
-  $.app.listen(port, () => {
-    console.log(`Running on port ${port}...`);
-  });
-};
+const app = express();
+const gCrud = new GCrud(env.db.url, env.db.name, app);
 
-function getPort(){
-  return process.env.NODE_ENV == 'production' ? 80 : 9000;
-}
+app.use(cors());
+app.use(bodyParser.json());
 
-module.exports = _public;
+const userResource = gCrud.build('users');
+
+userResource.get()
+
+app.listen(env.app.port, () => {
+  console.log(`Running on port ${env.app.port}...`);
+});
