@@ -14,8 +14,6 @@ app.use(bodyParser.json());
 
 const userResource = gCrud.build('users');
 
-userResource.get()
-
 app.listen(env.app.port, () => {
   console.log(`Running on port ${env.app.port}...`);
 });
