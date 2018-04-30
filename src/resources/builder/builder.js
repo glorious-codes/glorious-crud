@@ -5,13 +5,13 @@ const _public = {};
 
 _public.build = (app, baseResource, collection, options = {}) => {
 
-  buildEndpoint(app.get, `/${collection}/:id?`, (options.get || get));
-  buildEndpoint(app.post, `/${collection}`, (options.post || post));
-  buildEndpoint(app.put, `/${collection}/:id`, (options.put || put));
-  buildEndpoint(app.delete, `/${collection}/:id`,(options.delete || del));
+  buildEndpoint('get', `/${collection}/:id?`, (options.get || get));
+  buildEndpoint('post', `/${collection}`, (options.post || post));
+  buildEndpoint('put', `/${collection}/:id`, (options.put || put));
+  buildEndpoint('delete', `/${collection}/:id`,(options.delete || del));
 
   function buildEndpoint(method, path, action){
-    method(path, (req, res) => {
+    app[method](path, (req, res) => {
       action(req, res, options);
     });
   }
