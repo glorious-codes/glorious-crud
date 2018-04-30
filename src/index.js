@@ -7,7 +7,12 @@ module.exports = class GCrud {
     this.app = app;
   }
 
-  build(collectionName){
-    resourceBuilder.build(this.app, this.baseResource, collectionName);
+  build(collectionName, collectionOptions){
+    return resourceBuilder.build(
+      this.app,
+      this.baseResource,
+      collectionName,
+      collectionOptions
+    );
   }
 }

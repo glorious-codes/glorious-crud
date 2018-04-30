@@ -23,6 +23,6 @@ describe('Index', () => {
   it('should build a resource', () => {
     const gCrud = new GCrud(dbUrl, dbName, app);
     gCrud.build('users');
-    expect(resourceBuilder.build).toHaveBeenCalledWith(gCrud.app, gCrud.baseResource, 'users');
+    expect(resourceBuilder.build).toHaveBeenCalledWith(gCrud.app, gCrud.baseResource, 'users', undefined);
   });
 });
