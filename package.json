@@ -1,5 +1,5 @@
 {
-  "name": "glorious-crud",
+  "name": "gcrud",
   "version": "0.1.0",
   "description": "A bare minimum and extensible crud generator",
   "main": "src/index.js",
