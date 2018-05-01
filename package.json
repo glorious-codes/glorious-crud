@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "A bare minimum and extensible crud generator",
   "main": "src/index.js",
+  "files": ["src/**/!(app|test).js"],
   "scripts": {
     "test": "./node_modules/jest/bin/jest.js"
   },
