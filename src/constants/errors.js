@@ -17,7 +17,7 @@ module.exports = {
   DB_UNAVAILABLE: {
     status: 503,
     body: {
-      message: 'Failed on connect to the database.'
+      message: 'Failed to connect to database.'
     }
   },
   UNEXPECTED_ERROR: {

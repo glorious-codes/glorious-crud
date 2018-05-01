@@ -9,10 +9,10 @@
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "mongodb": "^3.0.5"
   },
   "devDependencies": {
-    "body-parser": "^1.18.2",
     "codecov": "^3.0.0",
     "cors": "^2.8.4",
     "express": "^4.16.3",

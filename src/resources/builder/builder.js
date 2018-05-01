@@ -1,66 +1,76 @@
-const ERRORS = require('../../constants/errors');
+const requestService = require('../../services/request/request');
 const idService = require('../../services/id/id');
 
 const _public = {};
 
-_public.build = (app, baseResource, collection) => {
+_public.build = (app, baseResource, collection, options = {}) => {
 
-  app.get(`/${collection}/:id?`, (req, res) => {
-    const id = req.params.id;
-    if(id && !idService.isValid(id))
-      return throwError(res, ERRORS.INVALID_ID);
-    baseResource.get(collection, id, req.query).then(result => {
-      res.send(result);
-    }, err => {
-      res.status(err.status).send(err.body);
+  buildEndpoint('get', `/${collection}/:id?`, (options.get || get));
+  buildEndpoint('post', `/${collection}`, (options.post || post));
+  buildEndpoint('put', `/${collection}/:id`, (options.put || put));
+  buildEndpoint('delete', `/${collection}/:id`,(options.delete || del));
+
+  function buildEndpoint(method, path, action){
+    app[method](path, (req, res) => {
+      action(req, res, options);
     });
-  });
-
-  app.post(`/${collection}`, (req, res) => {
-    const item = req.body;
-    if(!hasAnyAttribute(item))
-      return throwError(res, ERRORS.EMPTY_REQUEST_BODY);
-    item._id = idService.generate();
-    baseResource.post(collection, item).then(() => {
-      res.status(201).send({_id: item._id});
-    }, err => {
-      res.status(err.status).send(err.body);
-    });
-  });
-
-  app.put(`/${collection}/:id`, (req, res) => {
-    const id = req.params.id;
-    const item = req.body;
-    if(!idService.isValid(id))
-      return throwError(res, ERRORS.INVALID_ID);
-    if(!hasAnyAttribute(item))
-      return throwError(res, ERRORS.EMPTY_REQUEST_BODY);
-    baseResource.put(collection, id, item).then(() => {
-      res.status(204).send();
-    }, err => {
-      res.status(err.status).send(err.body);
-    });
-  });
-
-  app.delete(`/${collection}/:id`, (req, res) => {
-    const id = req.params.id;
-    if(!idService.isValid(id))
-      return throwError(res, ERRORS.INVALID_ID);
-    baseResource.remove(collection, id).then(() => {
-      res.status(204).send();
-    }, err => {
-      res.status(err.status).send(err.body);
-    });
-  });
-
-  function hasAnyAttribute(data){
-    for(var attr in data) {
-      if (data.hasOwnProperty(attr))
-        return true;
-    }
   }
 
-  function throwError(res, err){
+  function get(req, res, options){
+    const err = requestService.validate('get', req);
+    if(err)
+      return throwError(req, res, err, options.onGetError);
+    baseResource.get(collection, req.params.id, req.query).then(result => {
+      respond(req, res, {status: 200, body: result}, options.onGetSuccess);
+    }, err => {
+      throwError(req, res, err, options.onGetError);
+    });
+  }
+
+  function post(req, res, options){
+    const err = requestService.validate('post', req);
+    if(err)
+      return throwError(req, res, err, options.onPostError);
+    req.body._id = idService.generate();
+    baseResource.post(collection, req.body).then(() => {
+      const result = {_id: req.body._id};
+      respond(req, res, {status: 201, body: result}, options.onPostSuccess);
+    }, err => {
+      throwError(req, res, err, options.onPostError);
+    });
+  }
+
+  function put(req, res, options){
+    const err = requestService.validate('put', req);
+    if(err)
+      return throwError(req, res, err, options.onPutError);
+    baseResource.put(collection, req.params.id, req.body).then(() => {
+      respond(req, res, {status: 204}, options.onPutSuccess);
+    }, err => {
+      throwError(req, res, err, options.onPutError);
+    });
+  }
+
+  function del(req, res, options){
+    const err = requestService.validate('delete', req);
+    if(err)
+      return throwError(req, res, err, options.onDeleteError);
+    baseResource.remove(collection, req.params.id).then(() => {
+      respond(req, res, {status: 204}, options.onDeleteSuccess);
+    }, err => {
+      throwError(req, res, err, options.onDeleteError);
+    });
+  }
+
+  function respond(req, res, response, customSuccessAction){
+    if(customSuccessAction)
+      return customSuccessAction(req, res, response);
+    res.status(response.status).send(response.body);
+  }
+
+  function throwError(req, res, err, customErrorAction){
+    if(customErrorAction)
+      return customErrorAction(req, res, err);
     res.status(err.status).send(err.body);
   }
 

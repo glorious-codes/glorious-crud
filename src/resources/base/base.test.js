@@ -195,7 +195,7 @@ describe('Base Resource', () => {
       expect(err).toEqual({
         status: 503,
         body: {
-          message: 'Failed on connect to the database.'
+          message: 'Failed to connect to database.'
         }
       });
     });
