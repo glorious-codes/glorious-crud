@@ -19,7 +19,7 @@ The purpose of this lib is removing all the effort involved in crating a default
 
 ``` javascript
 const express = require('express');
-const GCrud = require('./');
+const GCrud = require('gcrud');
 
 const app = express();
 const gCrud = new GCrud('databaseUrl', 'databaseName', app);
