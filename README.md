@@ -15,7 +15,7 @@ npm i -S gcrud
 
 ### Basic
 
-The purpose of this lib is removing all the effort involved in crating a default crud as well as keeping everything under your control through its options.
+The purpose of this lib is removing all the effort involved in creating a default crud as well as keeping everything under your control through its options.
 
 ``` javascript
 const express = require('express');
@@ -59,7 +59,7 @@ const options = {
 const beersResource = gCrud.build('beers', options);
 ```
 
-You can also set listeners to be called on success or on error of some method:
+You can also set listeners to be called *on success* or *on error* of some method:
 ``` javascript
 const options = {
   // Executes after every successful get request
@@ -75,7 +75,7 @@ const options = {
     // response is an object containing "status" (201) and "body".
   },
   // Executes after every failed post request
-  onPostError: (req, res) => {
+  onPostError: (req, res, err) => {
     // err is an object containing "status" (4xx or 5xx) and "body".
   },
   // Executes after every successful put request
@@ -83,7 +83,7 @@ const options = {
     // response is an object containing "status" (204).
   },
   // Executes after every failed put request
-  onPutError: (req, res) => {
+  onPutError: (req, res, err) => {
     // err is an object containing "status" (4xx or 5xx) and "body".
   },
   // Executes after every successful delete request
@@ -91,7 +91,7 @@ const options = {
     // response is an object containing "status" (204).
   }
   // Executes after every failed delete request
-  onDeleteError: (req, res) => {
+  onDeleteError: (req, res, err) => {
     // err is an object containing "status" (4xx or 5xx) and "body".
   }
 }
@@ -123,17 +123,25 @@ npm install
 node src/app.js
 ```
 
-The api will be running on `http://localhost:9000`.
+7. The API will be running on `http://localhost:9000`.
+
+8. Make some request to see the API in action:
+``` bash
+curl http://localhost:9000/beers -H 'content-type: application/json' -d '{"name":"Opa Bier"}'
+```
+
+**NOTE**
+Check out below how to configure MongoDB on your machine before making any request to the API.
 
 ## Database
 
-1. Install MongoDB following its website [instructions](https://docs.mongodb.com/manual/administration/install-community/)
+1. Install MongoDB following its website [instructions](https://docs.mongodb.com/manual/administration/install-community/).
 
-2. Create a database called `grud`
+2. Create a database called `gcrud`.
 
-3. Create a collection called `beers`
+3. Create a collection called `beers`.
 
-4. Start mongo on the default port(27017) : `mongod`
+4. Start mongo on the default port(27017): Type `mongod` on your terminal.
 
 ## Tools
 

@@ -1,6 +1,6 @@
 {
   "name": "gcrud",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A bare minimum and extensible crud generator",
   "main": "src/index.js",
   "files": ["src/**/!(app|test).js"],
@@ -9,6 +9,17 @@
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
   "license": "MIT",
+  "repository": "rafaelcamargo/glorious-crud",
+  "keywords": [
+    "crud",
+    "nosql",
+    "mongo",
+    "generator",
+    "bare-minimum",
+    "extensible",
+    "express",
+    "api"
+  ],
   "dependencies": {
     "body-parser": "^1.18.2",
     "mongodb": "^3.0.5"
