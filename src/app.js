@@ -5,12 +5,6 @@ const env = require('../environments/dev.json');
 const app = express();
 const gCrud = new GCrud(env.db.url, env.db.name, app);
 
-const usersResource = gCrud.build('users');
-
-usersResource.get('/users/:id/custom', (req, res) => {
-  res.send({message: 'My custom endpoint'});
-});
-
 const beersResource = gCrud.build('beers', {
   onPostSuccess: (req, res, result) => {
     res.status(201).send({
