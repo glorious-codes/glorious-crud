@@ -15,7 +15,7 @@ npm i -S gcrud
 
 ### Basic
 
-The purpose of this lib is removing all the effort involved in creating a default crud as well as keeping everything under your control through its options.
+The purpose of this lib is to remove all the effort involved in creating a default crud as well as keeping everything under your control through its options.
 
 ``` javascript
 const express = require('express');

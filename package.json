@@ -1,6 +1,6 @@
 {
   "name": "gcrud",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A bare minimum and extensible crud generator",
   "main": "src/index.js",
   "files": ["src/**/!(app|test).js"],
