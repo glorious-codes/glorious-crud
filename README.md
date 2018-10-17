@@ -1,6 +1,6 @@
 # Glorious Crud
 
-A bare minimum and extensible crud generator.
+> A bare minimum and extensible crud generator.
 
 [![codecov](https://codecov.io/gh/rafaelcamargo/glorious-crud/branch/master/graph/badge.svg)](https://codecov.io/gh/rafaelcamargo/glorious-crud)
 [![CircleCI](https://circleci.com/gh/rafaelcamargo/glorious-crud/tree/master.svg?style=svg)](https://circleci.com/gh/rafaelcamargo/glorious-crud/tree/master)
@@ -8,7 +8,7 @@ A bare minimum and extensible crud generator.
 ## Installation
 
 ```
-npm i -S gcrud
+npm install @glorious/crud --save
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ The purpose of this lib is to remove all the effort involved in creating a defau
 
 ``` javascript
 const express = require('express');
-const GCrud = require('gcrud');
+const GCrud = require('@glorious/crud');
 
 const app = express();
 const gCrud = new GCrud('databaseUrl', 'databaseName', app);
@@ -127,7 +127,9 @@ node src/app.js
 
 8. Make some request to see the API in action:
 ``` bash
-curl http://localhost:9000/beers -H 'content-type: application/json' -d '{"name":"Opa Bier"}'
+curl http://localhost:9000/beers \
+  -H 'content-type: application/json' \
+  -d '{"name":"Opa Bier"}'
 ```
 
 **NOTE**
