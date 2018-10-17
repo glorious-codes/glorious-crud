@@ -1,6 +1,6 @@
 {
-  "name": "gcrud",
-  "version": "0.1.3",
+  "name": "@glorious/crud",
+  "version": "0.1.4",
   "description": "A bare minimum and extensible crud generator",
   "main": "src/index.js",
   "files": ["src/**/!(app|test).js"],
@@ -9,7 +9,7 @@
   },
   "author": "Rafael Camargo <hello@rafaelcamargo.com>",
   "license": "MIT",
-  "repository": "rafaelcamargo/glorious-crud",
+  "repository": "glorious-codes/glorious-crud",
   "keywords": [
     "crud",
     "nosql",
