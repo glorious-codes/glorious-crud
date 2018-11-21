@@ -2,8 +2,8 @@
 
 > A bare minimum and extensible crud generator.
 
-[![codecov](https://codecov.io/gh/rafaelcamargo/glorious-crud/branch/master/graph/badge.svg)](https://codecov.io/gh/rafaelcamargo/glorious-crud)
-[![CircleCI](https://circleci.com/gh/rafaelcamargo/glorious-crud/tree/master.svg?style=svg)](https://circleci.com/gh/rafaelcamargo/glorious-crud/tree/master)
+[![CircleCI](https://circleci.com/gh/glorious-codes/glorious-crud/tree/master.svg?style=svg)](https://circleci.com/gh/glorious-codes/glorious-crud/tree/master)
+[![codecov](https://codecov.io/gh/glorious-codes/glorious-crud/branch/master/graph/badge.svg)](https://codecov.io/gh/rafaelcamargo/glorious-crud)
 
 ## Installation
 
