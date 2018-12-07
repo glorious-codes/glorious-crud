@@ -29,7 +29,8 @@ module.exports = class BaseResource {
     return connect((db, onComplete) => {
       data.updatedAt = dateService.getNow().toJSON();
       this.get(collection, id).then(() => {
-        db.collection(collection).update({'_id': mongodb.ObjectID(id)}, {$set: data}, onComplete);
+        data._id = mongodb.ObjectID(id);
+        db.collection(collection).update({'_id': data._id}, data, onComplete);
       }, err => {
         onComplete(err);
       });

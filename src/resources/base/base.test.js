@@ -134,17 +134,15 @@ describe('Base Resource', () => {
   });
 
   it('should update a resource of a collection', () => {
-    const _id = '5ad25c91d44a096d26a280be';
+    const _id = mongodb.ObjectID('5ad25c91d44a096d26a280be');
     stubMongoClientConnect('success', userMock);
-    baseResource.put('users', _id, {name: 'Fernando'}).then(() => {
-      expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
+    baseResource.put('users', _id, {_id, name: 'Fernando'}).then(() => {
       expect(mongoDBClientCollectionMock.update).toHaveBeenCalledWith({
         _id
       }, {
-        $set: {
-          name: 'Fernando',
-          updatedAt: '2018-04-07T00:00:00.000Z'
-        }
+        _id,
+        name: 'Fernando',
+        updatedAt: '2018-04-07T00:00:00.000Z'
       }, jasmine.any(Function));
     });
   });
