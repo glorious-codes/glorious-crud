@@ -1,6 +1,7 @@
 const mongodb = require('mongodb');
 const ERRORS = require('../../constants/errors');
 const dateService = require('../../services/date/date');
+const queryService = require('../../services/query/query');
 
 module.exports = class BaseResource {
   constructor(dbUrl, dbName){
@@ -72,10 +73,14 @@ function getSingleResource(collection, id, query, onComplete){
   });
 }
 
-function getAllResources(collection, query, onComplete){
-  collection.find(query).toArray((err, result) => {
-    onGetComplete(err, result, onComplete);
-  });
+function getAllResources(collection, queryParams, onComplete){
+  const query = queryService.build(queryParams);
+  collection.find(query.filter)
+            .sort(query.sort)
+            .limit(query.limit)
+            .toArray((err, result) => {
+              onGetComplete(err, result, onComplete);
+            });
 }
 
 function onGetComplete(err, result, onComplete){

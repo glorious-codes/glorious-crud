@@ -99,13 +99,47 @@ const options = {
 const beersResource = gCrud.build('beers', options);
 ```
 
+### Built-in Query Params
+
+When querying resources, you can use some built-in query params:
+
+#### $sortBy
+
+Sort some collection by one of its attributes:
+
+```
+curl http://localhost:9000/beers?$sortBy=name
+```
+
+#### $order
+
+Order a sorted request by `asc` or `desc`:
+
+```
+curl http://localhost:9000/beers?$sortBy=name&$order=desc
+```
+
+#### $limit
+
+Limit the number of results:
+
+```
+curl http://localhost:9000/beers?$limit=1
+```
+
+Also, you can use any resource attribute name as a filter:
+
+```
+curl http://localhost:9000/beers?name=Opa%20Bier
+```
+
 ## Contributing
 
 1. Install [Node](https://nodejs.org/en/). Download the "Recommend for Most Users" version.
 
 2. Clone the repo:
 ``` bash
-git clone git@github.com:rafaelcamargo/glorious-crud.git
+git clone git@github.com:glorious-codes/glorious-crud.git
 ```
 
 3. Go to the project directory
@@ -129,7 +163,7 @@ node src/app.js
 ``` bash
 curl http://localhost:9000/beers \
   -H 'content-type: application/json' \
-  -d '{"name":"Opa Bier"}'
+  -d '{ "name":"Opa Bier" }'
 ```
 
 **NOTE**
