@@ -1,143 +1,101 @@
 const mongodb = require('mongodb');
 const dateService = require('../../services/date/date');
+const queryService = require('../../services/query/query');
+const { MongoDBClientMock, mongoDBClientMockInstance } = require('../../mocks/mongodb-client');
+const { mongoDBCollectionMockInstance } = require('../../mocks/mongodb-collection');
 const BaseResource = require('./base');
 
 describe('Base Resource', () => {
-  let mongoDBClientMock,
-    mongoDBClientCollectionMock,
-    userMock,
-    baseResource;
+  const DB_URL = 'mongodb://test:27017';
+  const DB_NAME = 'testdb';
+  let baseResource;
 
   function mockUser(){
-    userMock = {
+    return {
       _id: '5ad25c91d44a096d26a280be',
       name: 'Rafael',
       createdAt: '2018-04-07T00:00:00.000Z'
     };
   }
 
-  function mockMongoDBClientCollection(responseType, response){
-    const err = responseType == 'error' ? response : null;
-    const result = responseType == 'success' ? response : null;
-    const toArrayStub = jasmine.createSpy();
-    const findOneStub = jasmine.createSpy();
-    const saveStub = jasmine.createSpy();
-    const updateStub = jasmine.createSpy();
-    const deleteOneStub = jasmine.createSpy();
-    return {
-      findOne: findOneStub.and.callFake((query, callback) => {
-        callback(err, result);
-      }),
-      find(){
-        return {
-          toArray: toArrayStub.and.callFake(callback => {
-            callback(err, result);
-          })
-        };
-      },
-      save: saveStub.and.callFake((data, callback) => {
-        callback(err, result);
-      }),
-      update: updateStub.and.callFake((query, data, callback) => {
-        callback(err, result);
-      }),
-      deleteOne: deleteOneStub.and.callFake((query, callback) => {
-        callback(err, result);
-      }),
-    };
-  }
-
-  function mockMogoDBClient(responseType, response){
-    mongoDBClientCollectionMock = mongoDBClientCollectionMock || mockMongoDBClientCollection(responseType, response);
-    mongoDBClientMock = {
-      db(){
-        return {
-          collection(){
-            return mongoDBClientCollectionMock;
-          }
-        };
-      },
-      close: jasmine.createSpy()
-    };
-  }
-
-  function stubMongoClientConnect(responseType, response){
-    mockMogoDBClient(responseType, response);
-    spyOn(mongodb.MongoClient, 'connect').and.callFake((url, callback) => {
-      if(responseType == 'error')
-        callback(response);
-      else
-        callback(null, mongoDBClientMock);
+  function stubMongoClientConnect({ connectionErr, err, response } = {}){
+    mongodb.MongoClient.connect = jest.fn((url, callback) => {
+      const mongoDBClientMock = new MongoDBClientMock({ err, response });
+      return connectionErr ? callback(connectionErr) : callback(null, mongoDBClientMock);
     });
   }
 
   beforeEach(() => {
-    baseResource = new BaseResource('mongodb://test:27017', 'testdb');
-    mockUser();
-    spyOn(mongodb, 'ObjectID').and.callFake(id => id);
-    spyOn(dateService, 'getNow').and.returnValue(new Date('2018-04-07'));
-  });
-
-  afterEach(() => {
-    mongoDBClientCollectionMock = null;
+    baseResource = new BaseResource(DB_URL, DB_NAME);
+    mongodb.ObjectID = jest.fn(id => id);
+    dateService.getNow = jest.fn(() => new Date('2018-04-07'));
+    queryService.build = jest.fn(() => { return {}; });
   });
 
   it('should connect to mongo db client trough the proper database url', () => {
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: mockUser() });
     baseResource.get('users');
-    expect(mongodb.MongoClient.connect).toHaveBeenCalledWith('mongodb://test:27017', jasmine.any(Function));
+    expect(mongodb.MongoClient.connect).toHaveBeenCalledWith(DB_URL, jasmine.any(Function));
   });
 
   it('should return a promise after connecting to the mongo db client', () => {
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: mockUser() });
     const promise = baseResource.get('users');
     expect(promise.then).toBeDefined();
   });
 
   it('should get all resources of a collection', () => {
     const users = [{first: 'user'}, {second: 'user'}];
-    mongoDBClientCollectionMock = mockMongoDBClientCollection('success', users);
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: users });
     baseResource.get('users').then(response => {
       expect(response).toEqual(users);
     });
   });
 
+  it('should get all resources of a collection with built in query params', () => {
+    const users = [{first: 'user'}, {second: 'user'}];
+    stubMongoClientConnect({ response: users });
+    queryService.build = jest.fn(() => {
+      return { filter: {username: 'rafael'}, sort: {createdAt: -1}, limit: 0 };
+    });
+    baseResource.get('users').then(() => {
+      expect(mongoDBCollectionMockInstance.find).toHaveBeenCalledWith({username: 'rafael'});
+      expect(mongoDBCollectionMockInstance.sort).toHaveBeenCalledWith({createdAt: -1});
+      expect(mongoDBCollectionMockInstance.limit).toHaveBeenCalledWith(0);
+    });
+  });
+
   it('should get a single resource of a collection', () => {
     const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: mockUser() });
     baseResource.get('users', _id);
     expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
-    expect(mongoDBClientCollectionMock.findOne).toHaveBeenCalledWith({
+    expect(mongoDBCollectionMockInstance.findOne).toHaveBeenCalledWith({
       _id
     }, jasmine.any(Function));
   });
 
   it('should throw resource not found error when trying to get a non existing resource', () => {
-    const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
-    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
-      callback(null, null)
-    });
-    baseResource.get('users', _id).then(() => {}, err => {
+    stubMongoClientConnect();
+    baseResource.get('users', '5ad25c91d44a096d26a280be').then(() => {}, err => {
       expect(err).toEqual({status: 404});
     });
   });
 
   it('should save a new resource into a collection', () => {
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: mockUser() });
     baseResource.post('users', {name: 'Rafael'});
-    expect(mongoDBClientCollectionMock.save).toHaveBeenCalledWith({
+    expect(mongoDBCollectionMockInstance.save).toHaveBeenCalledWith({
       name: 'Rafael',
       createdAt: '2018-04-07T00:00:00.000Z'
     }, jasmine.any(Function));
   });
 
   it('should update a resource of a collection', () => {
-    const _id = mongodb.ObjectID('5ad25c91d44a096d26a280be');
-    stubMongoClientConnect('success', userMock);
+    const _id = '5ad25c91d44a096d26a280be';
+    stubMongoClientConnect({ response: mockUser() });
     baseResource.put('users', _id, {_id, name: 'Fernando'}).then(() => {
-      expect(mongoDBClientCollectionMock.update).toHaveBeenCalledWith({
+      expect(mongoDBCollectionMockInstance.update).toHaveBeenCalledWith({
         _id
       }, {
         _id,
@@ -149,10 +107,7 @@ describe('Base Resource', () => {
 
   it('should throw resource not found error when trying to update a non existing resource', () => {
     const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
-    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
-      callback(null, null)
-    });
+    stubMongoClientConnect();
     baseResource.put('users', _id, {name: 'Fernando'}).then(() => {}, err => {
       expect(err).toEqual({status: 404});
     });
@@ -160,10 +115,10 @@ describe('Base Resource', () => {
 
   it('should remove a resource of a collection', () => {
     const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({response: {}});
     baseResource.remove('users', _id).then(() => {
       expect(mongodb.ObjectID).toHaveBeenCalledWith(_id);
-      expect(mongoDBClientCollectionMock.deleteOne).toHaveBeenCalledWith({
+      expect(mongoDBCollectionMockInstance.deleteOne).toHaveBeenCalledWith({
         _id
       }, jasmine.any(Function));
     });
@@ -171,24 +126,21 @@ describe('Base Resource', () => {
 
   it('should throw resource not found error when trying to remove a non existing resource', () => {
     const _id = '5ad25c91d44a096d26a280be';
-    stubMongoClientConnect('success', userMock);
-    mongoDBClientCollectionMock.findOne.and.callFake((query, callback) => {
-      callback(null, null)
-    });
+    stubMongoClientConnect();
     baseResource.remove('users', _id).then(() => {}, err => {
       expect(err).toEqual({status: 404});
     });
   });
 
   it('should disconnect from mongo db client after performing query operation', () => {
-    stubMongoClientConnect('success', userMock);
+    stubMongoClientConnect({ response: mockUser() });
     baseResource.get('users').then(() => {
-      expect(mongoDBClientMock.close).toHaveBeenCalled();
+      expect(mongoDBClientMockInstance.close).toHaveBeenCalled();
     });
   });
 
-  it('should reject promise when connection to mongo db fails', () => {
-    stubMongoClientConnect('error', {some: 'error'});
+  it('should reject promise when connection to mongo db fails', done => {
+    stubMongoClientConnect({connectionErr: 'error'});
     baseResource.get('users').then(() => {}, err => {
       expect(err).toEqual({
         status: 503,
@@ -196,12 +148,12 @@ describe('Base Resource', () => {
           message: 'Failed to connect to database.'
         }
       });
+      done();
     });
   });
 
-  it('should reject promise when server throw some unexpected error', () => {
-    mongoDBClientCollectionMock = mockMongoDBClientCollection('error', {some: 'error'});
-    stubMongoClientConnect('success', userMock);
+  it('should reject promise when db throws some unexpected error', () => {
+    stubMongoClientConnect({ err: 'err' });
     baseResource.get('users').then(() => {}, err => {
       expect(err).toEqual({
         status: 500,
