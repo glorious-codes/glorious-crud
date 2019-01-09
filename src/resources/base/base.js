@@ -77,6 +77,7 @@ function getAllResources(collection, queryParams, onComplete){
   const query = queryService.build(queryParams);
   collection.find(query.filter)
             .sort(query.sort)
+            .skip(query.skip)
             .limit(query.limit)
             .toArray((err, result) => {
               onGetComplete(err, result, onComplete);

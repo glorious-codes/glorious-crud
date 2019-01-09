@@ -56,12 +56,13 @@ describe('Base Resource', () => {
     const users = [{first: 'user'}, {second: 'user'}];
     stubMongoClientConnect({ response: users });
     queryService.build = jest.fn(() => {
-      return { filter: {username: 'rafael'}, sort: {createdAt: -1}, limit: 0 };
+      return { filter: {username: 'rafael'}, skip: 0, sort: {createdAt: -1}, limit: 30 };
     });
     baseResource.get('users').then(() => {
       expect(mongoDBCollectionMockInstance.find).toHaveBeenCalledWith({username: 'rafael'});
+      expect(mongoDBCollectionMockInstance.skip).toHaveBeenCalledWith(0);
       expect(mongoDBCollectionMockInstance.sort).toHaveBeenCalledWith({createdAt: -1});
-      expect(mongoDBCollectionMockInstance.limit).toHaveBeenCalledWith(0);
+      expect(mongoDBCollectionMockInstance.limit).toHaveBeenCalledWith(30);
     });
   });
 

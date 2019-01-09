@@ -11,6 +11,7 @@ class MongoDBCollectionMock {
     mongoDBCollectionMockInstance.find = jest.fn(() => mongoDBCollectionMockInstance);
     mongoDBCollectionMockInstance.limit = jest.fn(() => mongoDBCollectionMockInstance);
     mongoDBCollectionMockInstance.save = jest.fn(callbackCaller);
+    mongoDBCollectionMockInstance.skip = jest.fn(() => mongoDBCollectionMockInstance);
     mongoDBCollectionMockInstance.sort = jest.fn(() => mongoDBCollectionMockInstance);
     mongoDBCollectionMockInstance.toArray = jest.fn(callbackCaller);
     mongoDBCollectionMockInstance.update = jest.fn(callbackCaller);

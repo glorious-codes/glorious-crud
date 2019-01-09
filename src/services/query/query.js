@@ -1,4 +1,5 @@
 const QUERY_PARAMS = require('../../constants/query-params');
+const DEFAULT_PAGE_SIZE = 30;
 
 const _public = {};
 
@@ -6,7 +7,8 @@ _public.build = queryParams => {
   return {
     filter: buildFilter(queryParams),
     sort: buildQuerySort(queryParams[QUERY_PARAMS.SORT_BY], queryParams[QUERY_PARAMS.ORDER]),
-    limit: buildQueryLimit(queryParams[QUERY_PARAMS.LIMIT])
+    skip: buildQuerySkip(queryParams[QUERY_PARAMS.PAGE], queryParams[QUERY_PARAMS.PAGE_SIZE]),
+    limit: buildQueryLimit(queryParams[QUERY_PARAMS.LIMIT], queryParams[QUERY_PARAMS.PAGE_SIZE])
   };
 }
 
@@ -20,8 +22,8 @@ function buildFilter(queryParams){
 }
 
 function isBuiltInQueryParam(key){
-  const { SORT_BY, ORDER, LIMIT } = QUERY_PARAMS;
-  return [SORT_BY, ORDER, LIMIT].includes(key);
+  const { SORT_BY, ORDER, PAGE, PAGE_SIZE, LIMIT } = QUERY_PARAMS;
+  return [SORT_BY, ORDER, PAGE, PAGE_SIZE, LIMIT].includes(key);
 }
 
 function buildQuerySort(sortByParam, orderParam){
@@ -34,8 +36,18 @@ function buildQueryOrderValue(orderParam){
   return orderParam == 'asc' ? 1 : -1;
 }
 
-function buildQueryLimit(limitParam){
-  return parseInt(limitParam) || 0;
+function buildQuerySkip(pageParam, pageSizeParam){
+  return pageParam ?
+    parseIntegerParam(pageParam - 1, 0) * parseIntegerParam(pageSizeParam, DEFAULT_PAGE_SIZE) :
+    0;
+}
+
+function buildQueryLimit(limitParam, pageSizeParam){
+  return parseIntegerParam(limitParam) || parseIntegerParam(pageSizeParam, DEFAULT_PAGE_SIZE);
+}
+
+function parseIntegerParam(param, fallbackValue){
+  return Math.abs(parseInt(param)) || fallbackValue;
 }
 
 module.exports = _public;
