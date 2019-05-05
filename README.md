@@ -184,12 +184,3 @@ Check out below how to configure MongoDB on your machine before making any reque
 1. [Postman](https://www.getpostman.com/) is an awesome tool that makes API development a breeze.
 
 2. [MongoDB Compass](https://www.mongodb.com/products/compass) is the prettiest MongoDB UI client I have ever seen.
-
-## Deployment Services
-
-The services I recommend to get your ideas out of your head are:
-
-1. [WeDeploy](https://wedeploy.com/) (API)
-  - 1 GB Transfer, 1 GB Memory, 1 CPU, 512 MB Storage for **$0/mo**
-2. [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) (Database)
-  - 512 MB Storage, 3 node replica set for **$0/mo**
